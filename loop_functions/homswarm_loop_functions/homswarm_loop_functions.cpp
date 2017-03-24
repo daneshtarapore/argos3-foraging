@@ -95,6 +95,44 @@ void CHomSwarmLoopFunctions::Reset()
 
 void CHomSwarmLoopFunctions::PreStep()
 {
+    CVector2 cPos1, cPos2;
+    CSpace::TMapPerType& m_cEpucks1 = GetSpace().GetEntitiesByType("e-puck");
+    CSpace::TMapPerType& m_cEpucks2 = GetSpace().GetEntitiesByType("e-puck");
+
+    for(CSpace::TMapPerType::iterator it = m_cEpucks1.begin();
+        it != m_cEpucks1.end();
+        ++it)
+    {
+        /* Get handle to foot-bot entity and controller */
+        CEPuckEntity& cEPuck1 = *any_cast<CEPuckEntity*>(it->second);
+        CEPuckHomSwarm& cController1 = dynamic_cast<CEPuckHomSwarm&>(cEPuck1.GetControllableEntity().GetController());
+
+        unsigned rob_id = cController1.RobotIdStrToInt();
+
+        cPos1.Set(cEPuck1.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                  cEPuck1.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+
+        if(rob_id == 15){
+
+
+            for(CSpace::TMapPerType::iterator it2 = m_cEpucks2.begin();
+                it2 != m_cEpucks2.end();
+                ++it2)
+            {
+                CEPuckEntity& cEPuck2 = *any_cast<CEPuckEntity*>(it2->second);
+                CEPuckHomSwarm& cController2 = dynamic_cast<CEPuckHomSwarm&>(cEPuck2.GetControllableEntity().GetController());
+
+                unsigned rob_id2 = cController2.RobotIdStrToInt();
+
+                cPos2.Set(cEPuck2.GetEmbodiedEntity().GetOriginAnchor().Position.GetX(),
+                          cEPuck2.GetEmbodiedEntity().GetOriginAnchor().Position.GetY());
+
+                float dist = (cPos1- cPos2).Length();
+                std::cerr << "Robot id: " << rob_id2 << " dist " << dist << std::endl;
+            }
+        }
+    }
+
 //    CVector2 cPos;
 //    CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
 

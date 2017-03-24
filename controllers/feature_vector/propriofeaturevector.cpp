@@ -162,7 +162,7 @@ unsigned int CProprioceptiveFeatureVector::SimulationStep()
 
     ComputeFeatureValues();
     m_unValue = 0;
-    
+
     for (unsigned int i = 0; i < m_unLength; i++)
         m_unValue += (unsigned int)m_pfFeatureValues[i] * (1 << i);
 
@@ -362,11 +362,9 @@ void CProprioceptiveFeatureVector::ComputeFeatureValues_onlynbrsandactuators()
     /*f1 = TrackNeighborsInQueue(CurrentStepNumber, unNbrCount, num_nbrs_threshold,
                                m_iShortTimeWindowLength, queue_length_threshold,
                                m_unSumTimeStepsNbrs_ShortRangeTimeWindow, m_unQueueIndex_ShortRangeTimeWindow, m_punNbrs_ShortRangeTimeWindow);
-
     f2 = TrackNeighborsInQueue(CurrentStepNumber, unNbrCount, num_nbrs_threshold,
                                m_iMediumTimeWindowLength, queue_length_threshold,
                                m_unSumTimeStepsNbrs_MediumRangeTimeWindow, m_unQueueIndex_MediumRangeTimeWindow, m_punNbrs_MediumRangeTimeWindow);
-
     f3 = TrackNeighborsInQueue(CurrentStepNumber, unNbrCount, num_nbrs_threshold,
                                m_iLongTimeWindowLength, queue_length_threshold,
                                m_unSumTimeStepsNbrs_LongRangeTimeWindow, m_unQueueIndex_LongRangeTimeWindow, m_punNbrs_LongRangeTimeWindow);*/
@@ -707,4 +705,3 @@ void CProprioceptiveFeatureVector::PrintFeatureDetails()
 
 /******************************************************************************/
 /******************************************************************************/
-

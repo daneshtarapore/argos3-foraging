@@ -57,7 +57,7 @@ public:
 
        SensoryData()
        {
-           m_rTime = 0.0f;           
+           m_rTime = 0.0f;
            f_LeftWheelSpeed = 0.0f; f_RightWheelSpeed = 0.0f;  f_LeftWheelSpeed_prev = 0.0f; f_RightWheelSpeed_prev = 0.0f;
            LinearSpeed = 0.0f; AngularSpeed = 0.0f; LinearAcceleration = 0.0f; AngularAcceleration = 0.0f;
            pos  = CVector2(0.0, 0.0);

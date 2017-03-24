@@ -518,7 +518,7 @@ private:
                                 m_pcRNG->Uniform(CRange<CRadians>(-CRadians::PI, CRadians::PI)));
 
                 sensor_readings[i].Range             = tmp.Length();
-                sensor_readings[i].HorizontalBearing = tmp.Angle();
+                sensor_readings[i].HorizontalBearing = tmp.Angle(); //m_pcRNG->Uniform(CRange<CRadians>(-CRadians::PI/5.0f, CRadians::PI/5.0f)); /
 
 /*
                                 tmp += CVector2(m_pcRNG->Uniform(CRange<Real>(-50.0f, +50.0f)),
@@ -613,8 +613,8 @@ private:
                     continue;
                 }*/
 
-                startangle = 105.0f + (133.0f - 105.0f)/2.0f;
-                endangle   = 225.0f + (255.0f - 225.0f)/2.0f;
+                startangle = 105.0f + (133.0f - 105.0f) / 2.0f;
+                endangle   = 225.0f + (255.0f - 225.0f) / 2.0f;
                 if((BearingAngle_Degrees >= 0 && BearingAngle_Degrees <= startangle) || (BearingAngle_Degrees >= endangle && BearingAngle_Degrees <= 360.0f))
                 {
                     if(BearingAngle_Degrees >= 0 && BearingAngle_Degrees <= startangle)
