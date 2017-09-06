@@ -1,7 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
-# Descend into the foraging_loop_functions directory
-add_subdirectory(foraging_loop_functions)
 
 # Descend into the homswarm_loop_functions directory
 add_subdirectory(homswarm_loop_functions)

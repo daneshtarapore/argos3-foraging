@@ -182,7 +182,7 @@ void CHomSwarmLoopFunctions::PreStep()
     }*/
 
 
-    float start_firsttrans_sec = 500.0f, finish_firsttosecondtrans_sec = 1000.0f;
+    float start_firsttrans_sec = 150.0f, finish_firsttosecondtrans_sec = 1000.0f;
 
 
     CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
@@ -266,34 +266,17 @@ void CHomSwarmLoopFunctions::PreStep()
 
 void CHomSwarmLoopFunctions::PostStep()
 {
-    if(GetSpace().GetSimulationClock() <= 450.0)
-        return;
+    std::map<size_t, size_t> RobotIndex_ARGoSID_Map;
+    RobotIndex_ARGoSID_Map[0] = 201u;
+    RobotIndex_ARGoSID_Map[1] = 202u;
+    RobotIndex_ARGoSID_Map[2] = 206u;
+    RobotIndex_ARGoSID_Map[3] = 207u;
+    RobotIndex_ARGoSID_Map[4] = 208u;
+    RobotIndex_ARGoSID_Map[5] = 209u;
+    RobotIndex_ARGoSID_Map[6] = 210u;
 
+    m_cOutput << GetSpace().GetSimulationClock() << "\t";
 
-//    m_cOutput << "Clock: " << GetSpace().GetSimulationClock() << "\t";
-//    CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
-//    for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
-//    {
-//        /* Get handle to e-puck entity and controller */
-//        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
-//        CEPuckHomSwarm& cController = dynamic_cast<CEPuckHomSwarm&>(cEPuck.GetControllableEntity().GetController());
-
-//        unsigned observed_rob_id = cController.RobotIdStrToInt();
-//        unsigned observed_rob_fv = cController.GetRobotFeatureVector();
-
-//        m_cOutput << "Observer Robot Id: " << observed_rob_id << "  " << "Proprio. FV: " << observed_rob_fv << "\t" ;
-
-//        for(size_t observed_index = 0; observed_index < cController.GetObservedFeatureVectors().ObservedRobotIDs.size(); ++observed_index)
-//        {
-//            m_cOutput << "Id: " << cController.GetObservedFeatureVectors().ObservedRobotIDs[observed_index] << "  "
-//                      << "FV: " << cController.GetObservedFeatureVectors().ObservedRobotFVs[observed_index] << "\t";
-//        }
-//    }
-//    m_cOutput << std::endl;
-//    return;
-
-
-#ifndef RECORDSELFVOTESONLY
     CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
     for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
     {
@@ -304,187 +287,10 @@ void CHomSwarmLoopFunctions::PostStep()
         unsigned observed_rob_id = cController.RobotIdStrToInt();
         unsigned observed_rob_fv = cController.GetRobotFeatureVector();
 
-        std::list<unsigned> list_Consensus_Tolerators, list_Consensus_Attackers;
-        list_Consensus_Tolerators.clear(); list_Consensus_Attackers.clear();
-
-
-        for(CSpace::TMapPerType::iterator it_ob = m_cEpucks.begin(); it_ob != m_cEpucks.end(); ++it_ob)
-        {
-            CEPuckEntity& cEPuck_Observers = *any_cast<CEPuckEntity*>(it_ob->second);
-            CEPuckHomSwarm& cController_Observers = dynamic_cast<CEPuckHomSwarm&>(cEPuck_Observers.GetControllableEntity().GetController());
-
-            unsigned observers_rob_id = cController_Observers.RobotIdStrToInt();
-
-            t_listConsensusInfoOnRobotIds listConsensusInfoOnRobotIds = cController_Observers.GetListConsensusInfoOnRobotIds();
-
-            for (t_listConsensusInfoOnRobotIds ::iterator it_con = listConsensusInfoOnRobotIds.begin(); it_con != listConsensusInfoOnRobotIds.end(); ++it_con)
-            {
-                if(it_con->uRobotId == observed_rob_id && it_con->consensus_state == 1)
-                    list_Consensus_Attackers.push_back(observers_rob_id);
-
-                else if(it_con->uRobotId == observed_rob_id && it_con->consensus_state == 2)
-                    list_Consensus_Tolerators.push_back(observers_rob_id);
-            }
-        }
-
-        m_cOutput << "Clock: " << GetSpace().GetSimulationClock() << "\t"
-                  << "Id: " << observed_rob_id << "\t"
-                  << "FV: " << observed_rob_fv << "\t";
-
-        m_cOutput << "Consensus_Tolerators: ";
-        for (std::list<unsigned>::iterator it_tolcon = list_Consensus_Tolerators.begin(); it_tolcon != list_Consensus_Tolerators.end(); ++it_tolcon)
-            m_cOutput << (*it_tolcon) << " ";
-        for (int i = 0; i < u_num_epucks - list_Consensus_Tolerators.size(); ++i)
-            m_cOutput << " -1 ";
-
-        m_cOutput <<  "\t" << "Consensus_Attackers: ";
-        for (std::list<unsigned>::iterator it_atkcon = list_Consensus_Attackers.begin(); it_atkcon != list_Consensus_Attackers.end(); ++it_atkcon)
-            m_cOutput << (*it_atkcon) << " ";
-        for (int i = 0; i < u_num_epucks - list_Consensus_Attackers.size(); ++i)
-            m_cOutput << " -1 ";
-        m_cOutput << std::endl;
-
-        //if (observed_rob_id == 16)
-        {
-            if((list_Consensus_Attackers.size() == list_Consensus_Tolerators.size()) && (list_Consensus_Tolerators.size() == 0))
-            {
-                if (observed_rob_id == 15)
-                    cController.GetLEDsPtr()->SetAllColors(CColor::YELLOW);
-                else
-                    cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
-            }
-            else if(list_Consensus_Attackers.size() > list_Consensus_Tolerators.size())
-                cController.GetLEDsPtr()->SetAllColors(CColor::RED);
-            else
-                cController.GetLEDsPtr()->SetAllColors(CColor::GREEN);
-        }
+        m_cOutput << RobotIndex_ARGoSID_Map[observed_rob_id] << " " << observed_rob_fv << "\t";
     }
-#else
-    CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
-    for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
-    {
-        /* Get handle to e-puck entity and controller */
-        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
-        CEPuckHomSwarm& cController = dynamic_cast<CEPuckHomSwarm&>(cEPuck.GetControllableEntity().GetController());
-
-        unsigned observed_rob_id = cController.RobotIdStrToInt();
-        unsigned observed_rob_fv = cController.GetRobotFeatureVector();
-
-        std::list<unsigned> list_Voters_Tolerators, list_Voters_Attackers;
-        list_Voters_Tolerators.clear(); list_Voters_Attackers.clear();
-
-
-        for(CSpace::TMapPerType::iterator it_ob = m_cEpucks.begin(); it_ob != m_cEpucks.end(); ++it_ob)
-        {
-            CEPuckEntity& cEPuck_Observers = *any_cast<CEPuckEntity*>(it_ob->second);
-            CEPuckHomSwarm& cController_Observers = dynamic_cast<CEPuckHomSwarm&>(cEPuck_Observers.GetControllableEntity().GetController());
-
-            unsigned observers_rob_id = cController_Observers.RobotIdStrToInt();
-
-            t_listVoteInformationRobots listVoteInformationRobots = cController_Observers.GetListVoteInfoOnRobotIds();
-
-            for (t_listVoteInformationRobots::iterator it_vot = listVoteInformationRobots.begin(); it_vot != listVoteInformationRobots.end(); ++it_vot)
-            {
-                assert(it_vot->uVoterIds.size() == 1u); // only self-vote should be registered
-                assert(it_vot->attackvote_count + it_vot->toleratevote_count == 1u); // only self-vote should be registered
-
-                if(it_vot->uRobotId == observed_rob_id && it_vot->attackvote_count > 0)
-                    list_Voters_Attackers.push_back(observers_rob_id);
-
-                else if(it_vot->uRobotId == observed_rob_id && it_vot->toleratevote_count > 0)
-                    list_Voters_Tolerators.push_back(observers_rob_id);
-            }
-        }
-
-        m_cOutput << "Clock: " << GetSpace().GetSimulationClock() << "\t"
-                  << "Id: " << observed_rob_id << "\t"
-                  << "FV: " << observed_rob_fv << "\t";
-
-        m_cOutput << "Voters_Tolerators: ";
-        for (std::list<unsigned>::iterator it_tolcon = list_Voters_Tolerators.begin(); it_tolcon != list_Voters_Tolerators.end(); ++it_tolcon)
-            m_cOutput << (*it_tolcon) << " ";
-        for (int i = 0; i < u_num_epucks - list_Voters_Tolerators.size(); ++i)
-            m_cOutput << " -1 ";
-
-        m_cOutput <<  "\t" << "Voters_Attackers: ";
-        for (std::list<unsigned>::iterator it_atkcon = list_Voters_Attackers.begin(); it_atkcon != list_Voters_Attackers.end(); ++it_atkcon)
-            m_cOutput << (*it_atkcon) << " ";
-        for (int i = 0; i < u_num_epucks - list_Voters_Attackers.size(); ++i)
-            m_cOutput << " -1 ";
-        m_cOutput << std::endl;
-    }
-#endif
-
-
-
-
-
-//    for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
-//    {
-//       /* Get handle to e-puck entity and controller */
-//       CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
-//       CEPuckHomSwarm& cController = dynamic_cast<CEPuckHomSwarm&>(cEPuck.GetControllableEntity().GetController());
-
-//       unsigned observed_rob_id = cController.RobotIdStrToInt();
-//       unsigned observed_rob_fv = cController.GetRobotFeatureVector();
-
-
-//       unsigned total_observers = 0, attackers = 0, tolerators = 0, undecided = 0;
-//       for(CSpace::TMapPerType::iterator it_ob = m_cEpucks.begin(); it_ob != m_cEpucks.end(); ++it_ob)
-//       {
-//           CEPuckEntity& cEPuck_Observers = *any_cast<CEPuckEntity*>(it_ob->second);
-//           CEPuckHomSwarm& cController_Observers = dynamic_cast<CEPuckHomSwarm&>(cEPuck_Observers.GetControllableEntity().GetController());
-
-//           unsigned observers_rob_id = cController_Observers.RobotIdStrToInt();
-
-//           if(observed_rob_id == observers_rob_id) // can't observe yourself
-//               continue;
-
-//           t_listFVsSensed listFVsSensed = cController_Observers.GetListFVsSensed();
-//           t_listMapFVsToRobotIds listMapFVsToRobotIds = cController_Observers.GetMapFVsSensed();
-
-//           bool robot_observed(false);
-//           for (t_listMapFVsToRobotIds::iterator itd = listMapFVsToRobotIds.begin(); itd != listMapFVsToRobotIds.end(); ++itd)
-//           {
-//               if(itd->uRobotId == observed_rob_id) // Cheating if the FV is not computed proprioceptively. Although the FV could be then sent to the robot
-//               {
-//                   assert(robot_observed == false); // the observer can only observe the robot once in one time-step
-//                   robot_observed = true;
-//                   total_observers++;
-//                   //break; // the observer can only observe the robot once in one time-step
-//               }
-//           }
-
-//           if(robot_observed)
-//               for (t_listFVsSensed::iterator itd = listFVsSensed.begin(); itd != listFVsSensed.end(); ++itd)
-//               {
-//                   if(itd->uFV == observed_rob_fv)
-//                   {
-//                       if(itd->uMostWantedState == 0)
-//                           undecided++;
-//                       else if(itd->uMostWantedState == 1)
-//                           attackers++;
-//                       else if(itd->uMostWantedState == 2)
-//                           tolerators++;
-//                       else
-//                       {
-//                            //LOGERR << "Not an attacker or tolerator. We can't be here, there's a bug! " << itd->uMostWantedState << std::endl;
-//                            //UPDATE: This is not a bug. It is just that this observer has not observed enough another robots of the swarm to run the CRM and make a decision
-//                       }
-
-//                        break;
-//                   }
-//               }
-//       }
-
-//       m_cOutput << "Clock: " << GetSpace().GetSimulationClock() << "\t"
-//                 << "Id: " << observed_rob_id << "\t"
-//                 << "FV: " << observed_rob_fv << "\t"
-//                 << "NumObservers: " << total_observers << "\t"
-//                 << "NumTolerators: " << tolerators << "\t"
-//                 << "NumAttackers: " << attackers << "\t"
-//                 << "NumDontKnows: " << undecided << std::endl;
-//    }
+    m_cOutput << std::endl;
+    return;
 }
 
 /****************************************/

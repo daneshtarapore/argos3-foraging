@@ -18,6 +18,12 @@
 /******************************************************************************/
 /******************************************************************************/
 
+/******************************************************************************/
+/******************************************************************************/
+#define ROBOTSELFACCELERATION_NOT_IN_SIGNAL 999.0f
+/******************************************************************************/
+/******************************************************************************/
+
 using namespace argos;
 
 class CProprioceptiveFeatureVector
@@ -45,8 +51,6 @@ public:
        Real f_LeftWheelSpeed, f_RightWheelSpeed;
        Real f_LeftWheelSpeed_prev, f_RightWheelSpeed_prev;
        CCI_EPuckProximitySensor::TReadings m_ProximitySensorData;
-       CCI_LightUpdatedSensor::TReadings m_LightSensorData;
-       CCI_GroundSensor::TReadings m_GroundSensorData;
        CCI_RangeAndBearingSensor::TReadings  m_RABSensorData;
 
        Real LinearSpeed, AngularSpeed, LinearAcceleration, AngularAcceleration;
@@ -67,14 +71,12 @@ public:
            vec_linearspeeds.assign(15u, 0.0f); vec_linearspeeds_index = 0;
        }
 
-       void SetSensoryData(unsigned RobId, Real time, CCI_EPuckProximitySensor::TReadings proximity, CCI_LightUpdatedSensor::TReadings light, CCI_GroundSensor::TReadings ground,
-                           CCI_RangeAndBearingSensor::TReadings  rab, Real LeftWheelSpeed, Real RightWheelSpeed)
+       void SetSensoryData(unsigned RobId, Real time, CCI_EPuckProximitySensor::TReadings proximity, CCI_RangeAndBearingSensor::TReadings rab,
+                           Real LeftWheelSpeed, Real RightWheelSpeed)
        {
            m_unRobotId = RobId;
            m_rTime = time;
            m_ProximitySensorData = proximity;
-           m_LightSensorData = light;
-           m_GroundSensorData = ground;
            m_RABSensorData = rab;
            f_LeftWheelSpeed_prev = f_LeftWheelSpeed; f_RightWheelSpeed_prev = f_RightWheelSpeed;
            f_LeftWheelSpeed = LeftWheelSpeed; f_RightWheelSpeed = RightWheelSpeed;
@@ -83,7 +85,7 @@ public:
            //EstimateCurrentPosition();
        }
 
-       void SetSensoryData(unsigned RobId, Real time, CCI_RangeAndBearingSensor::TReadings  rab, Real LeftWheelSpeed, Real RightWheelSpeed)
+       void SetSensoryData(unsigned RobId, Real time, CCI_RangeAndBearingSensor::TReadings rab, Real LeftWheelSpeed, Real RightWheelSpeed)
        {
            m_unRobotId = RobId;
            m_rTime = time;
@@ -126,9 +128,11 @@ public:
        {
            /*normalises to range [-1 to 1] */
            if ((AngularAcceleration / m_sRobotData.MaxAngularAcceleration) >= 0.0f)
-               return std::min(AngularAcceleration / m_sRobotData.MaxAngularAcceleration,   1.0);
+               //return std::min(AngularAcceleration / m_sRobotData.MaxAngularAcceleration,   1.0);
+               return (AngularAcceleration / m_sRobotData.MaxAngularAcceleration) < 1.0 ? (AngularAcceleration / m_sRobotData.MaxAngularAcceleration) : 1.0;
            else
-                return std::max(AngularAcceleration / m_sRobotData.MaxAngularAcceleration, -1.0);
+               //return std::max(AngularAcceleration / m_sRobotData.MaxAngularAcceleration, -1.0);
+               return (AngularAcceleration / m_sRobotData.MaxAngularAcceleration) > -1.0 ? (AngularAcceleration / m_sRobotData.MaxAngularAcceleration) : -1.0;
        }
     };
 
@@ -156,20 +160,16 @@ public:
 
     virtual unsigned int SimulationStep();
 
-    //virtual std::string ToString();
-
     static RobotData m_sRobotData;
     SensoryData m_sSensoryData;
 
 protected:
-    virtual void ComputeFeatureValues_onlynbrsandactuators();
     virtual void ComputeFeatureValues();
-    virtual void ComputeFeatureValues_NoAngularVelocityUsed();
 
     virtual unsigned CountNeighbors(Real sensor_range);
-    virtual Real TrackNeighborsInQueue(Real step, unsigned current_num_nbrs, unsigned num_nbrs_threshold,
-                               unsigned queue_length, Real queue_length_threshold,
-                               unsigned int& sum_nbrs, unsigned int& queue_index, unsigned int* queue_nbrs);
+//    virtual Real TrackNeighborsInQueue(Real step, unsigned current_num_nbrs, unsigned num_nbrs_threshold,
+//                               unsigned queue_length, Real queue_length_threshold,
+//                               unsigned int& sum_nbrs, unsigned int& queue_index, unsigned int* queue_nbrs);
     virtual Real TrackRobotDisplacement(Real step, std::vector<RobotRelativePosData>& displacement_vector);
 
     unsigned  m_unValue;
@@ -179,7 +179,7 @@ protected:
     Real*         m_pfAllFeatureValues;
 
     int*           m_piLastOccuranceEvent;
-    int*           m_piLastOccuranceNegEvent;
+    //int*           m_piLastOccuranceNegEvent;
 
     int          m_iEventSelectionTimeWindow;
 
@@ -195,38 +195,43 @@ protected:
     // keeping track of neighbors in last m_iEventSelectionTimeWindow time-steps
     unsigned int m_unNbrsCurrQueueIndex;
 
-    unsigned int m_unSumTimeStepsNbrsRange0to30;
-    unsigned int m_unSumTimeStepsNbrsRange30to60;
+    unsigned int m_unSumTimeStepsNbrsRange0to15;
+    unsigned int m_unSumTimeStepsNbrsRange15to30;
 
-    unsigned int* m_punNbrsRange0to30AtTimeStep;
-    unsigned int* m_punNbrsRange30to60AtTimeStep;
+    unsigned int* m_punNbrsRange0to15AtTimeStep;
+    unsigned int* m_punNbrsRange15to30AtTimeStep;
 
 
 
     // keeping track of distance travelled by bot in last 100 time-steps
-    int              m_iDistTravelledTimeWindow;
+    //DST
+//    int              m_iDistTravelledTimeWindow;
 
-    unsigned int     m_unCoordCurrQueueIndex;
+//    unsigned int     m_unCoordCurrQueueIndex;
 
-    Real           m_fSquaredDistTravelled;
-    Real           m_fSquaredDistThreshold;
-    Real           m_fCumulativeDistTravelled, m_fCumulativeDistThreshold;
+//    Real           m_fSquaredDistTravelled;
+      Real           m_fSquaredDistThreshold;
+//    Real           m_fCumulativeDistTravelled, m_fCumulativeDistThreshold;
 
-    argos::CVector2  *m_pvecCoordAtTimeStep;
+//    argos::CVector2  *m_pvecCoordAtTimeStep;
 
-    Real             *m_pfDistAtTimeStep;
+//    Real             *m_pfDistAtTimeStep;
 
     /************************************************************************************/
     /* Keeping track of neighbours at different time scales*/
-    unsigned int  m_unSumTimeStepsNbrs_ShortRangeTimeWindow, m_unSumTimeStepsNbrs_MediumRangeTimeWindow, m_unSumTimeStepsNbrs_LongRangeTimeWindow;
-    unsigned int  *m_punNbrs_ShortRangeTimeWindow, *m_punNbrs_MediumRangeTimeWindow, *m_punNbrs_LongRangeTimeWindow;
-    unsigned int m_unQueueIndex_ShortRangeTimeWindow, m_unQueueIndex_MediumRangeTimeWindow, m_unQueueIndex_LongRangeTimeWindow;
-    Real m_fEstimated_Dist_ShortTimeWindow, m_fEstimated_Dist_MediumTimeWindow, m_fEstimated_Dist_LongTimeWindow;
+    //DST
+//    unsigned int  m_unSumTimeStepsNbrs_ShortRangeTimeWindow, m_unSumTimeStepsNbrs_MediumRangeTimeWindow, m_unSumTimeStepsNbrs_LongRangeTimeWindow;
+//    unsigned int  *m_punNbrs_ShortRangeTimeWindow, *m_punNbrs_MediumRangeTimeWindow, *m_punNbrs_LongRangeTimeWindow;
+//    unsigned int m_unQueueIndex_ShortRangeTimeWindow, m_unQueueIndex_MediumRangeTimeWindow, m_unQueueIndex_LongRangeTimeWindow;
+//    Real m_fEstimated_Dist_ShortTimeWindow, m_fEstimated_Dist_MediumTimeWindow,
+      Real m_fEstimated_SquaredDist_LongTimeWindow;
 
     // keeping track of nbrs in time windows of different lengths
-    static int        m_iShortTimeWindowLength, m_iMediumTimeWindowLength, m_iLongTimeWindowLength;
+    //DSTstatic int        m_iShortTimeWindowLength, m_iMediumTimeWindowLength, m_iLongTimeWindowLength;
+      static int m_iLongTimeWindowLength;
 
-    std::vector<RobotRelativePosData> vec_RobPos_ShortRangeTimeWindow, vec_RobPos_MediumRangeTimeWindow, vec_RobPos_LongRangeTimeWindow;
+    //DSTstd::vector<RobotRelativePosData> vec_RobPos_ShortRangeTimeWindow, vec_RobPos_MediumRangeTimeWindow, vec_RobPos_LongRangeTimeWindow;
+    std::vector<RobotRelativePosData> vec_RobPos_LongRangeTimeWindow;
     /************************************************************************************/
 
 

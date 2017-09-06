@@ -121,6 +121,8 @@ void CEPuckHomSwarm::ExperimentToRun::Init(TConfigurationNode& t_node)
         SBehavior = SWARM_FLOCKING;
     else if (swarmbehav.compare("SWARM_HOMING") == 0)
         SBehavior = SWARM_HOMING;
+    else if (swarmbehav.compare("SWARM_HOMING_MOVING_BEACON") == 0)
+        SBehavior = SWARM_HOMING_MOVING_BEACON;    
     else if (swarmbehav.compare("SWARM_STOP") == 0)
         SBehavior = SWARM_STOP;
     else
@@ -185,7 +187,7 @@ void CEPuckHomSwarm::ExperimentToRun::Init(TConfigurationNode& t_node)
     else if (swarmbehav_trans.compare("SWARM_FLOCKING") == 0)
         SBehavior_Trans = SWARM_FLOCKING;
     else if (swarmbehav_trans.compare("SWARM_HOMING") == 0)
-        SBehavior_Trans = SWARM_HOMING;
+        SBehavior_Trans = SWARM_HOMING;    
     else if (swarmbehav_trans.compare("SWARM_STOP") == 0)
         SBehavior_Trans = SWARM_STOP;
     else if (swarmbehav_trans.compare("") == 0)
@@ -323,8 +325,8 @@ void CEPuckHomSwarm::Init(TConfigurationNode& t_node)
 
 void CEPuckHomSwarm::CopyRobotDetails(RobotDetails& robdetails)
 {
-    //std::cout << " robdetails.MaxLinearSpeed " << robdetails.MaxLinearSpeed << std::endl;
-    //std::cout << " robdetails.iterations_per_second " << robdetails.iterations_per_second << std::endl;
+  //std::cout << " robdetails.MaxLinearSpeed " << robdetails.MaxLinearSpeed << std::endl;
+  //std::cout << " robdetails.iterations_per_second " << robdetails.iterations_per_second << std::endl;
 
     CBehavior::m_sRobotData.MaxSpeed                    = robdetails.MaxLinearSpeed * robdetails.iterations_per_second; // max speed in cm/s to control behavior
     CBehavior::m_sRobotData.iterations_per_second       = robdetails.iterations_per_second;
@@ -360,7 +362,9 @@ void CEPuckHomSwarm::CopyRobotDetails(RobotDetails& robdetails)
     CProprioceptiveFeatureVector::m_sRobotData.seconds_per_iterations   = robdetails.seconds_per_iterations;
     CProprioceptiveFeatureVector::m_sRobotData.WHEEL_RADIUS             = robdetails.WHEEL_RADIUS;
 
+    //std::cout << " CProprioceptiveFeatureVector::m_sRobotData.MaxLinearSpeed " << CProprioceptiveFeatureVector::m_sRobotData.MaxLinearSpeed << std::endl;
 
+    
 
     CObservedFeatureVector::m_sRobotData.MaxLinearSpeed           = robdetails.MaxLinearSpeed; //cm/controlcycle
     CObservedFeatureVector::m_sRobotData.MaxLinearAcceleration    = robdetails.MaxLinearAcceleration; //cm/controlcycle/controlcycle
@@ -458,6 +462,7 @@ void CEPuckHomSwarm::ControlStep()
             m_sExpRun.SBehavior == ExperimentToRun::SWARM_DISPERSION  ||
             m_sExpRun.SBehavior == ExperimentToRun::SWARM_FLOCKING    ||
             m_sExpRun.SBehavior == ExperimentToRun::SWARM_HOMING      ||
+	    m_sExpRun.SBehavior == ExperimentToRun::SWARM_HOMING_MOVING_BEACON ||
             m_sExpRun.SBehavior == ExperimentToRun::SWARM_STOP)
         RunHomogeneousSwarmExperiment();
 
@@ -1066,7 +1071,7 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
 {
     m_vecBehaviors.clear();
 
-    float start_firsttrans_sec = 500.0f;
+    float start_firsttrans_sec = 150.0f;
 
     if(m_sExpRun.SBehavior_Trans != ExperimentToRun::SWARM_NONE)// && m_sExpRun.time_between_robots_trans_behav > 0.0f)
     {
@@ -1102,7 +1107,7 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
     //if(RobotIdStrToInt()>0 || (RobotIdStrToInt()==0 && m_fInternalRobotTimer <= 2500.0f))
     if(m_sExpRun.SBehavior_Current == ExperimentToRun::SWARM_AGGREGATION)
     {
-        CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.1f, ToRadians(CDegrees(5.0f)));    // 0.1f reflects a distance of about 4.5cm
+        CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.02f, ToRadians(CDegrees(5.0f)));    // 0.1f reflects a distance of about 4.5cm
         m_vecBehaviors.push_back(pcDisperseBehavior);
 
         CAggregateBehavior* pcAggregateBehavior = new CAggregateBehavior(100.0f); //range threshold in cm //60.0
@@ -1117,7 +1122,7 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
     //else if((RobotIdStrToInt()==0 && m_fInternalRobotTimer > 2500.0f))
     else if(m_sExpRun.SBehavior_Current == ExperimentToRun::SWARM_DISPERSION)
     {
-        CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.1f, ToRadians(CDegrees(5.0f)));
+        CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.02f, ToRadians(CDegrees(5.0f)));
         m_vecBehaviors.push_back(pcDisperseBehavior);
 
         CRandomWalkBehavior* pcRandomWalkBehavior = new CRandomWalkBehavior(0.0017f); //0.05f
@@ -1128,7 +1133,7 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
 
     else if(m_sExpRun.SBehavior_Current == ExperimentToRun::SWARM_FLOCKING)
     {
-        CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.1f, ToRadians(CDegrees(5.0f)));
+        CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.02f, ToRadians(CDegrees(5.0f)));
         m_vecBehaviors.push_back(pcDisperseBehavior);
 
         m_vecBehaviors.push_back(m_pFlockingBehavior);
@@ -1139,9 +1144,9 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
 
     else if(m_sExpRun.SBehavior_Current == ExperimentToRun::SWARM_HOMING)
     {
-        if(this->GetId().compare("ep0") == 0)
+        if(this->GetId().compare("ep1") == 0)
         {
-            // ep0 is the beacon robot
+            // ep1 is the beacon robot
             /* Sends out data 'BEACON_SIGNAL' with RABS that you are a beacon. Neighbouring robots will use this data to home in on your position */
             // BEACON_SIGNAL is way above the DATA_BYTE_BOUND
 
@@ -1150,7 +1155,7 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
         }
         else
         {
-            CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.1f, ToRadians(CDegrees(5.0f)));    // 0.1f reflects a distance of about 4.5cm
+            CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.02f, ToRadians(CDegrees(5.0f)));    // 0.1f reflects a distance of about 4.5cm
             m_vecBehaviors.push_back(pcDisperseBehavior);
 
             Real MAX_BEACON_SIGNAL_RANGE = 1.0f; //1m
@@ -1164,6 +1169,37 @@ void CEPuckHomSwarm::RunHomogeneousSwarmExperiment()
         // Homing disabled as the beacon signal data will interfere with the FV data
         //exit(-1);
     }
+
+    else if(m_sExpRun.SBehavior == ExperimentToRun::SWARM_HOMING_MOVING_BEACON)
+    {
+        if(this->GetId().compare("ep1") == 0)
+        {
+            // ep1 is the beacon robot
+            /* Sends out data 'BEACON_SIGNAL' with RABS that you are a beacon. Neighbouring robots will use this data to home in on your position */
+            // BEACON_SIGNAL is way above the DATA_BYTE_BOUND
+
+            m_pcRABA->SetData(0, BEACON_SIGNAL);
+	  
+            CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.02f, ToRadians(CDegrees(5.0f))); //new CDisperseBehavior(0.1f, ToRadians(CDegrees(5.0f)))
+            m_vecBehaviors.push_back(pcDisperseBehavior);
+
+            CRandomWalkBehavior* pcRandomWalkBehavior = new CRandomWalkBehavior(0.0017f); //0.05f
+            m_vecBehaviors.push_back(pcRandomWalkBehavior);
+        }
+        else
+        {
+            CDisperseBehavior* pcDisperseBehavior = new CDisperseBehavior(0.02f, ToRadians(CDegrees(5.0f)));    // 0.1f reflects a distance of about 4.5cm
+            m_vecBehaviors.push_back(pcDisperseBehavior);
+
+            Real MAX_BEACON_SIGNAL_RANGE = 1.0f; //1m
+            CHomingToFoodBeaconBehavior* pcHomingToFoodBeaconBehavior = new CHomingToFoodBeaconBehavior(BEACON_SIGNAL, MAX_BEACON_SIGNAL_RANGE);
+            m_vecBehaviors.push_back(pcHomingToFoodBeaconBehavior);
+
+            CRandomWalkBehavior* pcRandomWalkBehavior = new CRandomWalkBehavior(0.0017f); //0.05f
+            m_vecBehaviors.push_back(pcRandomWalkBehavior);
+        }
+}
+    
     else if(m_sExpRun.SBehavior_Current == ExperimentToRun::SWARM_STOP)
     {
     }

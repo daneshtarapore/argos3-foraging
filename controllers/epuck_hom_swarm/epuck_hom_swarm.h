@@ -113,6 +113,7 @@ public:
             SWARM_AGGREGATION = 0,
             SWARM_DISPERSION,
             SWARM_HOMING,
+	    SWARM_HOMING_MOVING_BEACON,
             SWARM_FLOCKING,
             SWARM_STOP,
             SWARM_NONE
