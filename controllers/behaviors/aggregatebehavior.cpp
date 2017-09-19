@@ -35,8 +35,6 @@ bool CAggregateBehavior::TakeControl()
     if(robotsinrange > 0u) 
         controltaken = true;
 
-    /*if(robotsinrange > 0u)
-        controltaken = true;*/
 
     if(controltaken)
     {

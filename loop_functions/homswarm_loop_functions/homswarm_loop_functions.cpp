@@ -38,7 +38,7 @@ void CHomSwarmLoopFunctions::Init(TConfigurationNode& t_node)
       m_cOutput.open(m_strOutput.c_str(), std::ios_base::trunc | std::ios_base::out);
       //m_cOutput << "# clock\trobot_id\trobot_fv\tobserving_robots\tattack\ttolerate\tundecided" << std::endl;
 
-       GetNodeAttribute(tParams, "arenalength", fArenaLength);
+      // GetNodeAttribute(tParams, "arenalength", fArenaLength);
 
    }
    catch(CARGoSException& ex)

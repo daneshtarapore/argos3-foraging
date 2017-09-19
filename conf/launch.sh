@@ -12,15 +12,15 @@ epuck_homswarmloopfunc_lib="\/home\/danesh\/argos3-epuck\/argos3-foraging\/build
 # Create a data diretory
 mkdir -p $data
 
-for NormalBehav in SWARM_AGGREGATION SWARM_DISPERSION SWARM_HOMING_MOVING_BEACON
-do
-    for ErrorBehav in FAULT_PROXIMITYSENSORS_SETMIN FAULT_PROXIMITYSENSORS_SETMAX FAULT_RABSENSOR_SETOFFSET FAULT_ACTUATOR_LWHEEL_SETZERO FAULT_ACTUATOR_RWHEEL_SETZERO FAULT_ACTUATOR_BWHEELS_SETZERO FAULT_NONE
-    do
+#for NormalBehav in SWARM_AGGREGATION SWARM_DISPERSION SWARM_HOMING_MOVING_BEACON
+#do
+#    for ErrorBehav in FAULT_PROXIMITYSENSORS_SETMIN FAULT_PROXIMITYSENSORS_SETMAX FAULT_RABSENSOR_SETOFFSET FAULT_ACTUATOR_LWHEEL_SETZERO FAULT_ACTUATOR_RWHEEL_SETZERO FAULT_ACTUATOR_BWHEELS_SETZERO FAULT_NONE
+#    do
 
-    mkdir -p $data/${NormalBehav}/${ErrorBehav}
+#    mkdir -p $data/${NormalBehav}/${ErrorBehav}
 
-    done
-done
+#    done
+#done
 
 
 
@@ -36,11 +36,11 @@ do
                 -e "s/SWARM_BEHAVIOR/${NormalBehav}/"                   \
                 -e "s/FAULT_BEHAVIOR/${ErrorBehav}/"                  \
                 -e "s/EPUCKHOMSWARMLOOPFUNCLIB/${epuck_homswarmloopfunc_lib}/"                  \
-                -e "s|DATAFILE|$data/${NormalBehav}/${ErrorBehav}/nohup_${SUFFIX}|" \
+                -e "s|DATAFILE|$data/${NormalBehav}_${ErrorBehav}_${SUFFIX}.fvlog_PropFV|" \
                 template_epuck_homswarm_noise.argos                       \
-                > $data/${NormalBehav}/${ErrorBehav}/exp_${SUFFIX}.argos
+                > $data/${NormalBehav}_${ErrorBehav}_${SUFFIX}.argos
             # Call ARGoS
-            parallel --no-notice --semaphore -j${maxnumjobs} argos3 -c $data/${NormalBehav}/${ErrorBehav}/exp_${SUFFIX}.argos &
+            parallel --no-notice --semaphore -j${maxnumjobs} argos3 -c $data/${NormalBehav}_${ErrorBehav}_${SUFFIX}.argos &
         done
     done
 done
